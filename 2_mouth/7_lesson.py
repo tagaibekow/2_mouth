@@ -8,7 +8,7 @@ import sqlite3
 
 def create_connection(db_name):
     connection = sqlite3.connect(db_name)
-    return connection
+    return connection 
 
 create_connection('school.db')
 
@@ -16,8 +16,8 @@ def create_table(conn, sql):
     cursor = conn.cursor()
     cursor.execute(sql)
 
-# execute - Отправляет запрос в бд
-# cursor - Посредник между нашим кодом и бд(sqlite3)
+# execute - Отправляет запрос в база данных
+# cursor - Посредник между нашим кодом и база данных(sqlite3)
     
 def create_student(conn, student: tuple):
     sql = """ INSERT INTO students
@@ -63,5 +63,3 @@ if connection:
     print('успешное подключение')
     create_table(connection, sql_create_table)
     create_student(connection, ('Tagaibekov Daiyrbek', 15, 'programist', "23-05-2009", 100.00, True))
-
-
