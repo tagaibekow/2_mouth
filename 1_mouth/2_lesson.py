@@ -11,11 +11,11 @@
 # # Привет Nurbolot Erk1nbaew. Мне 18 лет
 # print("Привет" + " " + name + " " + lastname + " Мне " + str(age) +" лет.")
 
-# text = "Привет, я Кутбухан. Мне 16 лет."
-# # print(text[3])
-# # print(text.index("6"))
-# # print(text[25])
-# print(text[0:6])
+text = "Привет, я Кутбухан. Мне 16 лет."
+print(text[3])
+print(text.index("6"))
+print(text[25])
+print(text[0:6])
 
 # if, elif, else
 

@@ -10,7 +10,7 @@ rand = random.randint(1,3)
 @dp.message_handler(commands='start')
 async def start(message:types.Message):
     await message.answer('Игра началось, \n я загадал чило от 1 до 3')
-    
+
 @dp.message_handler()
 async def num(message:types.Message):
     if int(message.text)==rand:
