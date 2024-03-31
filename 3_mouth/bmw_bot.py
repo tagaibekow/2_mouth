@@ -1,47 +1,56 @@
 from aiogram import Bot, Dispatcher, types, executor
-from config import tokens
+from config import token
 import logging
+import sqlite3
+from aiogram.dispatcher import FSMContext
+from aiogram.dispatcher.filters.state import State, StatesGroup
 
-bot = Bot(token=tokens)
+bot = Bot(token=token)
 dp = Dispatcher(bot)
 logging.basicConfig(level=logging.INFO)
 
-courses_buttons = [
-    types.KeyboardButton('Модели автомобилей'),
-    types.KeyboardButton('Цены'),
-    types.KeyboardButton('Характеристики'), 
-    types.KeyboardButton('Специальные предложения'),
-    types.KeyboardButton('Назад')
+conn = sqlite3.connect('test_drives.db')
+cursor = conn.cursor()
+cursor.execute('''CREATE TABLE IF NOT EXISTS test_drives (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    username INTEGER NOT NULL,
+                    model TEXT NOT NULL,
+                    date_time TEXT NOT NULL
+                    );''')
+conn.commit()
+
+@dp.message_handler(commands=['start'])
+async def start(message: types.Message):
+    await message.answer("Здраствуйте, вас приветствует компания BMW", reply_markup=start_keyboard)
+
+@dp.message_handler(commands=['help'])
+async def help(message: types.Message):
+    print(message)
+    await message.answer(f"Здраствуйте, {message.from_user.full_name}! Чем могу вам помочь?")
+
+start_buttons = [
+    types.KeyboardButton("Модели автомобилей"),
+    types.KeyboardButton("Цены"),
+    types.KeyboardButton("Характеристики"),
+    types.KeyboardButton("Специальные предложения")
 ]
-courses_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True).add(*courses_buttons)
+start_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True).add(*start_buttons)
 
-@dp.message_handler(commands='start')
-async def start(message:types.Message):
-    await message.answer('Здраствуйте, чем могу помочь?', reply_markup=courses_keyboard)
-    
-@dp.message_handler(commands='help')
-async def help(message:types.Message):
-    await message.answer('Напишите свою проблему.', reply_markup=courses_keyboard)
-
-coues_buttons = [
+model_button = [
     types.KeyboardButton('BMW IX M6'),
     types.KeyboardButton('BMW M5'),
-    types.KeyboardButton('BMW M3'), 
     types.KeyboardButton('BMW M4'),
-    types.KeyboardButton('Назад')
+    types.KeyboardButton("Назад")
 ]
-couses_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True).add(*coues_buttons) 
-    
-@dp.message_handler(text="Модели автомобилей")
-async def all_courses(message:types.Message):
-    await message.answer("Вот все наши автомобили:", reply_markup=couses_keyboard)
 
-@dp.message_handler(text="Назад")
-async def back(message:types.Message):
-    await start(message)
+model_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True).add(*model_button)
+
+@dp.message_handler(text="Модели автомобилей")
+async def num_3(message: types.Message):
+    await message.answer("Вот модели автомобилей", reply_markup=model_keyboard)
 
 @dp.message_handler(text="BMW IX M6")
-async def bmw(message:types.Message):
+async def num_5(message: types.Message):
     await message.answer_photo('https://www.bmw.kg/content/dam/bmw/common/all-models/m-series/iX-60/2021/onepager/bmw-ix-m60-onepager-mc-performance-design-highlights-hero-desktop.jpg/jcr:content/renditions/cq5dam.resized.img.1680.large.time1636554778108.jpg')
     await message.answer_photo('https://www.bmw.kg/content/bmw/marketB4R1/bmw_kg/ru_KG/all-models/m-series/bmw-ix-m60/2021/bmw-ix-m60-highlights/jcr:content/par/multicontent_1948771425/tabs/multicontenttab/items/smallteaser_92fb/image.transform/smallteaser/image.1659701303655.jpg')
     await message.answer_photo('https://www.bmw.kg/content/bmw/marketB4R1/bmw_kg/ru_KG/all-models/m-series/bmw-ix-m60/2021/bmw-ix-m60-highlights/jcr:content/par/multicontent_1948771425/tabs/multicontenttab/items/smallteaser_807d/image.transform/smallteaser/image.1659701303694.jpg')
@@ -51,22 +60,13 @@ async def bmw(message:types.Message):
     await message.answer_photo('https://www.bmw.kg/content/dam/bmw/common/all-models/m-series/iX-60/2021/onepager/bmw-ix-m60-onepager-gallery-impressions-thumbnail-02.jpg/jcr:content/renditions/cq5dam.resized.img.890.medium.time1634643882707.jpg')
     await message.answer_photo('https://www.bmw.kg/content/dam/bmw/common/all-models/m-series/iX-60/2021/onepager/bmw-ix-m60-onepager-gallery-impressions-thumbnail-05.jpg/jcr:content/renditions/cq5dam.resized.img.890.medium.time1707923934759.jpg')
     await message.answer_photo('https://www.bmw.kg/content/dam/bmw/common/all-models/m-series/iX-60/2021/onepager/bmw-ix-m60-onepager-gallery-impressions-thumbnail-06.jpg/jcr:content/renditions/cq5dam.resized.img.890.medium.time1640271472575.jpg')
-    
+
 @dp.message_handler(text="BMW M5")
-async def mers(message:types.Message):
+async def num_6(message: types.Message):
     await message.answer('https://www.youtube.com/watch?v=qHQaLs1nypg')
 
-@dp.message_handler(text="BMW M3")
-async def camry(message:types.Message):
-    await message.answer_photo('https://www.bmw.kg/content/bmw/marketB4R1/bmw_kg/ru_KG/all-models/m-series/m3-sedan/2023/bmw-3-series-sedan-m-automobiles-overview/jcr:content/par/multicontent/tabs/multicontenttab_copy/items/smallteaser/image.transform/smallteaser/image.1685595080472.jpg')
-    await message.answer_photo('https://www.bmw.kg/content/bmw/marketB4R1/bmw_kg/ru_KG/all-models/m-series/m3-sedan/2023/bmw-3-series-sedan-m-automobiles-overview/jcr:content/par/multicontent/tabs/multicontenttab_copy/items/smallteaser_copy/image.transform/smallteaser/image.1685595080513.jpg')
-    await message.answer_photo('https://www.bmw.kg/content/bmw/marketB4R1/bmw_kg/ru_KG/all-models/m-series/m3-sedan/2023/bmw-3-series-sedan-m-automobiles-overview/jcr:content/par/multicontent/tabs/multicontenttab_copy/items/smallteaser_copy_cop/image.transform/smallteaser/image.1685595080591.jpg')
-    await message.answer_photo('https://www.bmw.kg/content/bmw/marketB4R1/bmw_kg/ru_KG/all-models/m-series/m3-sedan/2023/bmw-3-series-sedan-m-automobiles-overview/jcr:content/par/multicontent/tabs/multicontenttab_copy_1506470107/items/smallteaser/image.transform/smallteaser/image.1685595080680.jpg')
-    await message.answer_photo('https://www.bmw.kg/content/bmw/marketB4R1/bmw_kg/ru_KG/all-models/m-series/m3-sedan/2023/bmw-3-series-sedan-m-automobiles-overview/jcr:content/par/multicontent/tabs/multicontenttab_copy_1506470107/items/smallteaser_copy/image.transform/smallteaser/image.1685595080725.jpg')
-    await message.answer_photo('https://www.bmw.kg/content/bmw/marketB4R1/bmw_kg/ru_KG/all-models/m-series/m3-sedan/2023/bmw-3-series-sedan-m-automobiles-overview/jcr:content/par/multicontent/tabs/multicontenttab_copy_1506470107/items/smallteaser_copy_cop/image.transform/smallteaser/image.1685595080772.jpg')
-
 @dp.message_handler(text="BMW M4")
-async def lexus(message:types.Message):
+async def num_7(message: types.Message):
     await message.answer_photo('https://www.bmw.kg/content/bmw/marketB4R1/bmw_kg/ru_KG/all-models/m-series/m4-coupe/2022/bmw-4-series-coupe-m-automobiles-highlights/jcr:content/par/multicontent/tabs/multicontenttab_copy/items/smallteaser/image.transform/smallteaser/image.1672115152308.jpg')
     await message.answer_photo('https://www.bmw.kg/content/bmw/marketB4R1/bmw_kg/ru_KG/all-models/m-series/m4-coupe/2022/bmw-4-series-coupe-m-automobiles-highlights/jcr:content/par/multicontent/tabs/multicontenttab_copy/items/smallteaser_copy/image.transform/smallteaser/image.1672115152361.jpg')
     await message.answer_photo('https://www.bmw.kg/content/bmw/marketB4R1/bmw_kg/ru_KG/all-models/m-series/m4-coupe/2022/bmw-4-series-coupe-m-automobiles-highlights/jcr:content/par/multicontent/tabs/multicontenttab_copy/items/smallteaser_copy_cop/image.transform/smallteaser/image.1672115152431.jpg')
@@ -74,64 +74,58 @@ async def lexus(message:types.Message):
     await message.answer_photo('https://www.bmw.kg/content/bmw/marketB4R1/bmw_kg/ru_KG/all-models/m-series/m4-coupe/2022/bmw-4-series-coupe-m-automobiles-highlights/jcr:content/par/multicontent/tabs/multicontenttab_1535450737/items/smallteaser/image.transform/smallteaser/image.1672115152894.jpg')
     await message.answer_photo('https://www.bmw.kg/content/bmw/marketB4R1/bmw_kg/ru_KG/all-models/m-series/m4-coupe/2022/bmw-4-series-coupe-m-automobiles-highlights/jcr:content/par/multicontent/tabs/multicontenttab_249504282/items/smallteaser/image.transform/smallteaser/image.1672115152610.jpg')
 
-couses_buttons = [
-    types.KeyboardButton('цена - BMW IX M6'),
-    types.KeyboardButton('цена - BMW M5'),
-    types.KeyboardButton('цена - BMW M3'), 
-    types.KeyboardButton('цена - BMW M4'),
-    types.KeyboardButton('Назад')
+
+bmw_button = [
+    types.KeyboardButton('Цена BMW IX M6'),
+    types.KeyboardButton('Цена BMW M5'),
+    types.KeyboardButton('Цена BMW M4'),
+    types.KeyboardButton("Назад")
 ]
-couсes_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True).add(*couses_buttons) 
 
-@dp.message_handler(text='Цены')
-async def zena(message:types.Message):
-    await message.answer("Вот цены автомобилей", reply_markup=couсes_keyboard)
+bmw_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True).add(*bmw_button)
 
+@dp.message_handler(text="Цены")
+async def num_9(message: types.Message):
+    await message.answer("Цены автомобилей", reply_markup=bmw_keyboard)
 
-@dp.message_handler(text="цена - BMW IX M6")
-async def bmw7(message:types.Message):
+@dp.message_handler(text="Цена BMW IX M6")
+async def num_01(message: types.Message):
     await message.answer("12 000 000 c")
 
-@dp.message_handler(text="цена - BMW M5")
-async def bmwm5(message:types.Message):
+@dp.message_handler(text="Цена BMW M5")
+async def num_02(message: types.Message):
     await message.answer("5 580 000 c")
 
-@dp.message_handler(text="цена - BMW M3")
-async def bmwm3(message:types.Message):
-    await message.answer("8 000 000 c")
-
-@dp.message_handler(text="цена - BMW M4")
-async def bmwm4(message:types.Message):
+@dp.message_handler(text="Цена BMW M4")
+async def num_03(message: types.Message):
     await message.answer("6 500 000 c")
 
-@dp.message_handler(text="Назад")
-async def back(message:types.Message):
+@dp.message_handler(text='Назад')
+async def rollback(message: types.Message):
     await start(message)
-    
-cotues_buttons = [
-    types.KeyboardButton('характеристика - BMW IX M6'),
-    types.KeyboardButton('характеристика - BMW M5'),
-    types.KeyboardButton('характеристика - BMW M3'), 
-    types.KeyboardButton('характеристика - BMW M4'),
-    types.KeyboardButton('Назад')
+
+num01_button = [
+    types.KeyboardButton('Характеристики BMW IX M6'),
+    types.KeyboardButton('Характеристики BMW M5'),
+    types.KeyboardButton('Характеристики BMW M4'),
+    types.KeyboardButton("Назад")
 ]
-courtses_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True).add(*cotues_buttons) 
+
+
+num2_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True).add(*num01_button)
 
 @dp.message_handler(text="Характеристики")
-async def all_courses(message:types.Message):
-    await message.answer("Вот характеристики автомобилей:", reply_markup=courtses_keyboard)
-    
-@dp.message_handler(text="Модели автомобилей")
-async def all_courses(message:types.Message):
-    await message.answer("Вот все наши автомобили:", reply_markup=courtses_keyboard)
+async def num_9(message: types.Message):
+    await message.answer("Характеристики машин", reply_markup=num2_keyboard)
 
-@dp.message_handler(text="Назад")
-async def back(message:types.Message):
+@dp.message_handler(text='Назад')
+async def rollback(message: types.Message):
     await start(message)
 
-@dp.message_handler(text="характеристика - BMW IX M6")
-async def bmw(message:types.Message):
-    await message.answer('''Мощность двигателя в кВт (л.с.):      455 (619)**\n
+
+@dp.message_handler(text='Характеристики BMW IX M6')
+async def num_01(message: types.Message):
+    await message.answer("""Мощность двигателя в кВт (л.с.):      455 (619)**\n
 
 \nРазгон 0–100 км/ч в секундах:      3,8*
 
@@ -139,13 +133,14 @@ async def bmw(message:types.Message):
 
 \nКрутящий момент в Нм при 1/мин:      1 100***
 
-\nЭнергопотребление в кВтч/100 км (WLTP):      21,6*    
+\nЭнергопотребление в кВтч/100 км (WLTP):      21,6*
 
-''')
+""")
     
-@dp.message_handler(text="характеристика - BMW M5")
-async def mers(message:types.Message):
-    await message.answer('''Мощность, л.с.:      460 (625)\n
+@dp.message_handler(text="Характеристики BMW M5")
+async def num_02(message: types.Message):
+    await message.answer("""
+ Мощность, л.с.:      460 (625)\n
 
 Разгон 0–100 км/ч, с:      3.9\n
 
@@ -153,23 +148,12 @@ async def mers(message:types.Message):
 
 Выбросы CO2 в смешанном цикле WLTP, г/км:      296–288\n
 
-''')
+""")
 
-@dp.message_handler(text="характеристика - BMW M3")
-async def camry(message:types.Message):
-    await message.answer('''Мощность, л.с.:      405 (551)\n
-
-Крутящий момент, Нм:      650\n
-
-Разгон 0-100 км/ч, с:       3,4\n
-
-Расход топлива в смешанном цикле WLTP, л/100 км:      10,4–10,1\n
-
-''')
-
-@dp.message_handler(text="характеристика - BMW M4")
-async def lexus(message:types.Message):
-    await message.answer('''Мощность, кВт (л.с.) при об/мин:      405 (551)/6,250\n
+@dp.message_handler(text='Характеристики BMW M4')
+async def num_03(message: types.Message):
+    await message.answer("""
+Мощность, кВт (л.с.) при об/мин:      405 (551)/6,250\n
 
 \nМакс. крутящий момент, Нм при об/мин:      650/2,750-5,950
 
@@ -177,98 +161,75 @@ async def lexus(message:types.Message):
 
 \nРасход топлива в л/100 км (смешанный цикл):      10.1
 
-''')
+""")
 
-couses_buttons = [
-    types.KeyboardButton('цена - BMW IX M6'),
-    types.KeyboardButton('цена - BMW M5'),
-    types.KeyboardButton('цена - BMW M3'), 
-    types.KeyboardButton('цена - BMW M4'),
-    types.KeyboardButton('Назад')
-]
-couсes_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True).add(*couses_buttons) 
-
-@dp.message_handler(text='Цены')
-async def zena(message:types.Message):
-    await message.answer("Вот цены автомобилей", reply_markup=couсes_keyboard)
-
-
-@dp.message_handler(text="цена - BMW IX M6")
-async def bmw7(message:types.Message):
-    await message.answer("12 000 000 c")
-
-@dp.message_handler(text="цена - BMW M5")
-async def bmwm5(message:types.Message):
-    await message.answer("5 580 000 c")
-
-@dp.message_handler(text="цена - BMW M3")
-async def bmwm3(message:types.Message):
-    await message.answer("8 000 000 c")
-
-@dp.message_handler(text="цена - BMW M4")
-async def bmwm4(message:types.Message):
-    await message.answer("6 500 000 c")
-
-@dp.message_handler(text="Назад")
-async def back(message:types.Message):
+@dp.message_handler(text='Назад')
+async def rollback(message: types.Message):
     await start(message)
+
+num_button = [
+    types.KeyboardButton('Гарантия 1+1'),
+    types.KeyboardButton('Тест драйв'),  
+    types.KeyboardButton("Назад")
+]
+
+num_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True).add(*num_button)
+
+@dp.message_handler(text="Специальные предложения")
+async def num(message: types.Message):
+    await message.answer("Вот какие есть специальные предложения", reply_markup=num_keyboard)
+
+@dp.message_handler(text="Гарантия 1+1")
+async def num(message: types.Message):
+    await message.answer("Мы дадим гарантию на 3 года")
+
+test_buttons = [
+    types.KeyboardButton('взять на тест BMW IX M6'),
+    types.KeyboardButton('взять на тест BMW M5'),
+    types.KeyboardButton('взять на тест BMW M4'),
+    types.KeyboardButton("Назад")
+]
+test_keyboard = types.ReplyKeyboardMarkup(resize_keyboard=True).add(*test_buttons)
+
+@dp.message_handler(text='Тест драйв')
+async def test_drive(message: types.Message):
+    await message.answer("Выберите модель для тест-драйва:", reply_markup=test_keyboard)
+
+@dp.message_handler(text='взять на тест BMW IX M6')
+async def test_car1(message: types.Message):
+    user_id = message.from_user.id
+    username = message.from_user.username
+    car_model = 'BMW IX M6'
+    date_time = message.date.strftime('%Y-%m-%d %H:%M:%S')
+    cursor.execute("INSERT INTO test_drives (username, model, date_time) VALUES (?, ?, ?)",
+                   (username, car_model, date_time))
+    conn.commit()
+
+    await message.answer('Вы записались на тест-драйв BMW IX M6. Приходите к нам в офис в указанное время.')
+
+@dp.message_handler(text='взять на тест BMW M5')
+async def test_car1(message: types.Message):
+    user_id = message.from_user.id
+    username = message.from_user.username
+    car_model = 'BMW M5'
+    date_time = message.date.strftime('%Y-%m-%d %H:%M:%S')
+    cursor.execute("INSERT INTO test_drives (username, model, date_time) VALUES (?, ?, ?)",
+                   (username, car_model, date_time))
+    conn.commit()
+
+    await message.answer('Вы записались на тест-драйв BMW M5. Приходите к нам в офис в указанное время.')
+
+@dp.message_handler(text='взять на тест BMW M4')
+async def test_car1(message: types.Message):
+    user_id = message.from_user.id
+    username = message.from_user.username
+    car_model = 'BMW M4'
+    date_time = message.date.strftime('%Y-%m-%d %H:%M:%S')
+    cursor.execute("INSERT INTO test_drives (username, model, date_time) VALUES (?, ?, ?)",
+                   (username, car_model, date_time))
+    conn.commit()
+
+    await message.answer('Вы записались на тест-драйв BMW M4. Приходите к нам в офис в указанное время.')
     
 
-
-@dp.message_handler(text='Специальные предложения')
-async def zena(message:types.Message):
-    await message.answer("""Если вы у нас будите покупать машины, то у нас даеться гарантия на 10 лет.\n
-При покупке машин тонировка + чехол идет в подарок!""")
-
-@dp.message_handler()
-async def about_us(message:types.Message):
-    await message.reply("я вас не понял")
-    
-import re
-from datetime import datetime
-
-def validate_phone(phone):
-    # Проверяем соответствие формату номера
-    if re.match(r'^\+\d{11}$', phone):
-        return True
-    else:
-        return False
-
-# Функция для проверки возраста пользователя
-def validate_age(age):
-    # Проверяем, что возраст не ниже 14 лет
-    if int(age) >= 14:
-        return True
-    else:
-        return False
-
-@dp.message_handler(state=RegisterState.age)
-async def end_register_user(message:types.Message, state:FSMContext):
-    # Получаем данные из состояния
-    user_data = await state.get_data()
-    
-    # Проверяем формат номера телефона
-    if not validate_phone(user_data['phone']):
-        await message.answer("Неправильный формат номера телефона. Пожалуйста, введите номер в формате +996XXXXXXXXX")
-        return
-    
-    if not validate_age(user_data['age']):
-        await message.answer("Ваш возраст меньше 14 лет. Регистрация невозможна.")
-        return
-
-    # Получаем текущую дату и время
-    current_time = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    
-    # Записываем данные пользователя в базу данных
-    cursor.execute("INSERT INTO users (id, first_name, last_name, phone, age, created) VALUES (?, ?, ?, ?, ?, ?)",
-                   (message.from_user.id, user_data['first_name'], user_data['last_name'], user_data['phone'], user_data['age'], current_time))
-    connection.commit()
-    
-    # Отправляем пользователю сообщение о завершении регистрации
-    await message.answer("Спасибо, вы успешно зарегистрированы!")
-
-    # Очищаем состояние
-    await state.finish()
-
-
-executor.start_polling(dp)
+executor.start_polling(dp, skip_updates=True)
