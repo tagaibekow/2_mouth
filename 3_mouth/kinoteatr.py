@@ -91,7 +91,6 @@ async def process_age(message: types.Message, state: FSMContext):
 async def process_city(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['city'] = message.text
-        # Сохраняем данные в базу данных или выполняем другие действия
         cursor.execute('INSERT INTO users (user_id, username, age, city) VALUES (?, ?, ?, ?)',
                        (message.from_user.id, data['name'], data['age'], data['city']))
         conn.commit()
