@@ -59,12 +59,28 @@ async def process_name(message: types.Message, state: FSMContext):
     await message.answer("Введите номер:")
     await AddInfoState.next()
     
-@dp.message_handler(state=AddInfoState.phone)
+@dp.message_handler(state=AddInfoState.directions)
 async def process_phone(message: types.Message, state: FSMContext):
     async with state.proxy() as data:
         data['phone'] = message.text
     await message.answer("Введите направление:")
     await AddInfoState.directions.set()
+    
+
+@dp.message_handler(state=AddInfoState.phone)
+async def process_phone(message: types.Message, state: FSMContext):
+    async with state.proxy() as data:
+        data['phone'] = message.text
+    keyboard = types.InlineKeyboardMarkup()
+    keyboard.add(
+        types.InlineKeyboardButton(text="Backend", callback_data="direction_backend"),
+        types.InlineKeyboardButton(text="Frontend", callback_data="direction_frontend"),
+        types.InlineKeyboardButton(text="UX/UI", callback_data="direction_ux_ui"),
+        types.InlineKeyboardButton(text="Android", callback_data="direction_android"),
+        types.InlineKeyboardButton(text="iOS", callback_data="direction_ios")
+    )
+    await message.reply("Отлично! Теперь выберите направление стажировки:", reply_markup=keyboard)
+    await AddInfoState.next()
 
 @dp.message_handler(state=AddInfoState.directions)
 async def process_directions(message: types.Message, state: FSMContext):
